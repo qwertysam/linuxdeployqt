@@ -63,6 +63,7 @@ QStringList extraQtPlugins;
 QStringList excludeLibs;
 QStringList ignoreGlob;
 bool copyCopyrightFiles = true;
+bool gtk3 = false;
 
 using std::cout;
 using std::endl;
@@ -1225,8 +1226,12 @@ void deployPlugins(const AppDirInfo &appDirInfo, const QString &pluginSourcePath
     // https://askubuntu.com/a/748186
     // This functionality used to come as part of Qt by default in earlier versions
     // At runtime, export QT_QPA_PLATFORMTHEME=gtk2 (Xfce does this itself)
-    pluginList.append("platformthemes/libqgtk3.so");
-    // pluginList.append("styles/libqgtk2style.so");
+    if (gtk3) {
+        pluginList.append("platformthemes/libqgtk3.so");
+    } else {
+        pluginList.append("platformthemes/libqgtk2.so");
+        pluginList.append("styles/libqgtk2style.so");
+    }
 	
     // Always bundle iconengines,imageformats
     // https://github.com/probonopd/linuxdeployqt/issues/82

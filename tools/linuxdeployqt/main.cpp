@@ -73,6 +73,7 @@ int main(int argc, char **argv)
     extern QStringList excludeLibs;
     extern QStringList ignoreGlob;
     extern bool copyCopyrightFiles;
+    extern bool gtk3;
 
     // Check arguments
     // Due to the structure of the argument parser, we have to check all arguments at first to check whether the user
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
             LogDebug() << "Argument found:" << argument;
             appimage = true;
             bundleAllButCoreLibs = true;
-        } else if (argument == QByteArray("-unsupported-bundle-everything")) {
+        } else if (argument == QByteArray("-bundle-everything")) {
             LogDebug() << "Argument found:" << argument;
             skipGlibcCheck = true;
             bundleEverything = true;
@@ -153,7 +154,7 @@ int main(int argc, char **argv)
         } else if (argument == QByteArray("-no-translations")) {
             LogDebug() << "Argument found:" << argument;
             skipTranslations = true;
-        } else if (argument == QByteArray("-unsupported-allow-new-glibc")) {
+        } else if (argument == QByteArray("-allow-new-glibc")) {
             LogDebug() << "Argument found:" << argument;
             skipGlibcCheck = true;
         } else if (argument.startsWith("-extra-plugins=")) {
@@ -168,6 +169,8 @@ int main(int argc, char **argv)
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf("=");
             ignoreGlob += argument.mid(index + 1);
+        } else if (argument == QByteArray("-gtk3")) {
+            gtk3 = true;
         } else if (argument.startsWith("--")) {
             LogError() << "Error: arguments must not start with --, only -:" << argument << "\n";
             return 1;
@@ -197,11 +200,11 @@ int main(int argc, char **argv)
                 "       currently is glibc %1, actual version is %2.\n"
                 "       This is so that the resulting bundle will work on most still-supported\n"
                 "       Linux distributions.\n"
-                "       It's possible to force linuxdeployqt to run with unsupported glibc\n"
-                "       versions with: '-unsupported-allow-new-glibc', the usage of this flag\n"
-                "       is discouraged, since it will generate AppImages that will not pass\n"
-                "       tests for AppImageHub, will not run on older operating systems and are\n"
-                "       not supported. For more information, please see:\n"
+                "       It's possible to force linuxdeployqt to run with newer glibc\n"
+                "       versions with: '-allow-new-glibc'. The usage of this flag\n"
+                "       is discouraged since it may generate AppImages that will not pass\n"
+                "       tests for AppImageHub, and may not run on older operating systems.\n"
+                "       For more information, please see:\n"
                 "       https://github.com/probonopd/linuxdeployqt/issues/340\n").arg(supportedGlcv, glcv);
             return 1;
         }
@@ -212,9 +215,11 @@ int main(int argc, char **argv)
         qInfo() << "Usage: linuxdeployqt <app-binary|desktop file> [options]";
         qInfo() << "";
         qInfo() << "Options:";
+        qInfo() << "   -allow-new-glibc         : Allows use of newer glibc versions.";
         qInfo() << "   -always-overwrite        : Copy files even if the target file exists.";
         qInfo() << "   -appimage                : Create an AppImage (implies -bundle-non-qt-libs).";
         qInfo() << "   -bundle-non-qt-libs      : Also bundle non-core, non-Qt libraries.";
+        qInfo() << "   -bundle-everything       : Bundles all libraries regardless of exclusion lists.";
         qInfo() << "   -exclude-libs=<list>     : List of libraries which should be excluded,";
         qInfo() << "                              separated by comma.";
         qInfo() << "   -ignore-glob=<glob>      : Glob pattern relative to appdir to ignore when";
@@ -223,6 +228,7 @@ int main(int argc, char **argv)
         qInfo() << "                              too";
         qInfo() << "   -extra-plugins=<list>    : List of extra plugins which should be deployed,";
         qInfo() << "                              separated by comma.";
+        qInfo() << "   -gtk3                    : Use the gtk3 library instead of gtk2.";
         qInfo() << "   -no-copy-copyright-files : Skip deployment of copyright files.";
         qInfo() << "   -no-plugins              : Skip plugin deployment.";
         qInfo() << "   -no-strip                : Don't run 'strip' on the binaries.";
